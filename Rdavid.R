@@ -29,6 +29,31 @@ lapply(names(degs), function(n){
     getClusterReportFile(david, paste0("Functional_analyses/", name, "_termclusters.txt"), type = c("Term"))
   })
 })
-Sys.time()
 
+#Function to read Rdavid output
+read.RdavidOutput <- function(fileName){
+  if (file.exists(fileName)){
+    terms <- read.csv(fileName, header = TRUE, sep = "\t", colClasses = "character")
+  } else {
+    NULL
+  }
+}
 
+go <- sapply(names(degs), function(n){
+  sapply(names(degs[[n]]), function(l){
+    name <- paste(n, l, sep = "_")
+    fName <- paste0("Functional_analyses/", name, "_goterms.txt")
+    print(fName)
+    t <- read.RdavidOutput(fName)
+    rows <- t$Benjamini < 0.05
+    t <- t[rows, c("Term", "Count", "Benjamini")]
+    t[order(t$Benjamini), ]
+  }, simplify = FALSE)
+}, simplify = FALSE)
+go <- unlist(go, recursive = FALSE)
+go <- go[-which(sapply(go, nrow) == 0)]
+
+lapply(names(go), function(n){
+  t <- go[[n]]
+  write.table(t, file = paste0("Functional_analyses/", n, ".txt"), row.names = FALSE, quote = FALSE, sep = "\t")
+})
