@@ -2,6 +2,7 @@ setwd("C:/Users/dkeo/surfdrive/pd_imaging_scn")
 options(stringsAsFactors = FALSE)
 library(plyr)
 library(metafor)
+library(venn)
 source("../pd_braak/PD/t.test.table.R")
 
 donorNames <- c("donor9861", "donor10021", "donor12876", "donor14380", "donor15496", "donor15697")
@@ -56,9 +57,16 @@ saveRDS(summary_ttest, file = "resources/summary_ttest.rds")
 summary_ttest <- readRDS("resources/summary_ttest.rds")
 
 # Print number of diff. expr. genes
-df <- t(apply(summary_ttest, c(1,2), function(x){
-  sum(x[, "BH"] < 0.05 & abs(x[, "Estimate"]) > 1)
-}))
+df <- aaply(summary_ttest, c(1,2), function(x){
+  # sum(x[, "BH"] < 0.05 & abs(x[, "Estimate"]) > 1)
+  down <- x[which(x[, "Estimate"] < -1 & x[,"BH"] < 0.05),]
+  up <- x[which(x[, "Estimate"] > 1 & x[,"BH"] < 0.05),]
+  c(down = nrow(down), up = nrow(up))
+})
+df <- alply(df, 1, function(x)x)
+df <- Reduce(cbind, df)
+colnames(df) <- c("Downregulated in network C", "Upregulated in network C", "Downregulated in network D", "Upregulated in network D")
+df <- cbind(Donor = gsub("donor", "Donor ", rownames(df)), df)
 write.table(df, file = "number_of_degs.txt", row.names = FALSE, sep = "\t", quote = FALSE)
 
 # Get tables of DEGs
@@ -67,6 +75,28 @@ degs <- alply(summary_ttest[, "summary", , ], 1, function(x){
   down <- down[order(down[,"BH"]),]
   up <- x[which(x[, "Estimate"] > 1 & x[,"BH"] < 0.05),]
   up <- up[order(up[,"BH"]),]
-  list(down = down, up = up)
+  list(downregulated = down, upregulated = up)
 }, .dims = TRUE)
 saveRDS(degs, file = "resources/degs.rds")
+
+# Overlap of DEGs between network C and D
+#? Venn diagram
+
+# ll_degs <- lapply(degs, function(l) unlist(lapply(l, rownames)))
+# overlap <- intersect(ll_degs$Network_C, ll_degs$Network_D)
+# tab <- t(summary_ttest[, "summary", overlap, "Estimate"])
+ll_degs <- lapply(degs, function(l) lapply(l, rownames))
+ll_degs <- unlist(ll_degs, recursive = FALSE)[c(1,3,2,4)]
+names(ll_degs) <- gsub("_", " ", names(ll_degs))
+pdf("venn_degs.pdf", 6, 5)
+venn <- venn(ll_degs, ellipse = TRUE, zcolor = "style", cexil = 1.2, cexsn = 1)
+dev.off()
+# 
+# overlap <- lapply(ll_degs, function(l1) {
+#   lapply(ll_degs, function(l2) {
+#     intersect(l1, l2)
+#   })
+# })
+# df <- sapply(overlap, function(l){sapply(l, length)})
+# df <- cbind(degs_set = rownames(df), df)
+# write.table(df, file = "degs_overlap_CandD.txt", row.names = FALSE, sep = "\t", quote = FALSE)
