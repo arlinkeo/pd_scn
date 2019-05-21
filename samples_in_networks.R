@@ -20,21 +20,26 @@ read.network <- function(nw, d){
   l
 }
 
-# Read and merge info of both networks C and D
-samples_networkC <- read.delim("Results_Oleh/Network_C.txt", skip = 1)
-samples_networkD <- read.delim("Results_Oleh/Network_D.txt", skip = 1)
-samples_C <- read.network(samples_networkC, donorNames)
-samples_D <- read.network(samples_networkD, donorNames)
+# Read and merge info of all networks
+networks <- paste0("Network_", LETTERS[1:9])
+networks <- sapply(networks, function(n){
+  file <- paste0("Results_Oleh/", n, ".txt")
+  f <- read.delim(file, skip = 1)
+  read.network(f, donorNames)
+}, simplify = FALSE)
 sample_info <- lapply(donorNames, function(d){
-  cbind(samples_C[[d]][, c(1:3)],
-    'Network_C' = samples_C[[d]]$Inside.y.n, 'Network_D' = samples_D[[d]]$Inside.y.n)
+  shared <- networks[[1]][[d]][, c(1:3)] # info shared across networks
+  nw_info <- sapply(networks, function(n){
+    n[[d]][, -c(1:3)]
+  })
+  cbind(shared, nw_info)
 })
 saveRDS(sample_info, file = "resources/sample_info.rds")
 
 # Number of samples within network
 df <- data.frame(
   'Donors' = gsub("donor", "Donor ", donorNames),
-  'All_samples' = sapply(samples_C, nrow),
-  t(sapply(sample_info, function(t){ apply(t[, c(4,5)], 2, sum)}))
+  # 'All_samples' = sapply(sample_info, nrow),
+  t(sapply(sample_info, function(t){ apply(t[, -c(1:3)], 2, sum)}))
 )
 write.table(df, "number_of_samples.txt", row.names = FALSE, quote = FALSE, sep = "\t")
