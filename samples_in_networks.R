@@ -38,8 +38,8 @@ saveRDS(sample_info, file = "resources/sample_info.rds")
 
 # Number of samples within network
 df <- data.frame(
-  'Donors' = gsub("donor", "Donor ", donorNames),
-  # 'All_samples' = sapply(sample_info, nrow),
   t(sapply(sample_info, function(t){ apply(t[, -c(1:3)], 2, sum)}))
 )
+df <- rbind(df, 'Total' = apply(df, 2, sum))
+df <- cbind('Donors' = gsub("donor", "Donor ", rownames(df)), df)
 write.table(df, "number_of_samples.txt", row.names = FALSE, quote = FALSE, sep = "\t")
