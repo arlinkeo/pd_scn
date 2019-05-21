@@ -13,7 +13,7 @@ sample_info <- readRDS("resources/sample_info.rds")
 
 # Differential expression between network and rest of the brain (t-test)
 ttest <- lapply(donorNames, function(d){
-  expr <- brainExpr[[d]][1:1000,]
+  expr <- brainExpr[[d]]
   samples <- sample_info[[d]][, -c(1:3)]
   abefghi <- samples[, -which(colnames(samples) %in% c("Network_C", "Network_D"))] # Networks unaffected in PD
   abefghi <- apply(abefghi, 1, function(x) Reduce(bitwOr, x))
@@ -27,7 +27,7 @@ ttest <- lapply(donorNames, function(d){
 })
 ttest <- simplify2array(ttest) # 4D array: genes x measures x networks x donors
 saveRDS(ttest, file = "resources/ttest.rds")
-# ttest <- readRDS("resources/ttest.rds")
+ttest <- readRDS("resources/ttest.rds")
 
 # Meta-analysis of differential expression across donors
 summary_ttest <- aaply(ttest, c(1,3), function(g){ # For each Braak region pair and gene
@@ -54,21 +54,20 @@ summary_ttest <- aaply(summary_ttest, c(2,3), function(t){ # P-value corrected f
 saveRDS(summary_ttest, file = "resources/summary_ttest.rds")
 summary_ttest <- readRDS("resources/summary_ttest.rds")
 
-# Print number of diff. expr. genes per donor and summary
-df <- aaply(summary_ttest, c(1,2), function(x){
-  down <- x[which(x[, "Estimate"] < -1 & x[,"BH"] < 0.05),]
-  up <- x[which(x[, "Estimate"] > 1 & x[,"BH"] < 0.05),]
-  n1 <- nrow(down)
-  n2 <- nrow(up)
-  n1 <- ifelse(is.null(n1), 0, n1)
-  n2 <- ifelse(is.null(n2), 0, n2)
-  c(down = n1, up = n2)
-})
-df <- alply(df, 1, function(x)x)
-df <- Reduce(cbind, df)
-colnames(df) <- c("Downregulated in network C", "Upregulated in network C", "Downregulated in network D", "Upregulated in network D")
-df <- cbind(Donor = gsub("donor", "Donor ", rownames(df)), df)
-# write.table(df, file = "number_of_degs.txt", row.names = FALSE, sep = "\t", quote = FALSE)
+# # Print number of diff. expr. genes per donor and summary
+# df <- aaply(summary_ttest, c(1,2), function(x){
+#   down <- x[which(x[, "Estimate"] < -1 & x[,"BH"] < 0.05),]
+#   up <- x[which(x[, "Estimate"] > 1 & x[,"BH"] < 0.05),]
+#   n1 <- nrow(down)
+#   n2 <- nrow(up)
+#   n1 <- ifelse(is.null(n1), 0, n1)
+#   n2 <- ifelse(is.null(n2), 0, n2)
+#   c(down = n1, up = n2)
+# })
+# df <- alply(df, 1, function(x)x)
+# df <- Reduce(cbind, df)
+# colnames(df) <- c("Downregulated in network C", "Upregulated in network C", "Downregulated in network D", "Upregulated in network D")
+# df <- cbind(Donor = gsub("donor", "Donor ", rownames(df)), df)
 
 # Get tables of DEGs
 degs <- alply(summary_ttest[, "summary", , ], 1, function(x){
@@ -84,6 +83,7 @@ saveRDS(degs, file = "resources/degs.rds")
 df <- sapply(degs, function(l){
   sapply(l, nrow)
 })
+write.table(df, file = "number_of_degs.txt", sep = "\t", quote = FALSE)
 
 # Overlap of DEGs between network C and D
 ll_degs <- lapply(degs, function(l) lapply(l, rownames))
