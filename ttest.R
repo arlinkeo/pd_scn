@@ -11,25 +11,23 @@ names(donorNames) <- donorNames
 brainExpr <- readRDS("../AHBA_Arlin/gene_expr.RDS")
 sample_info <- readRDS("resources/sample_info.rds")
 
-# check order of samples
-sapply(donorNames, function(d){ 
-  identical(colnames(brainExpr[[d]]), sample_info[[d]]$Sample_id)
-})
-
 # Differential expression between network and rest of the brain (t-test)
 ttest <- lapply(donorNames, function(d){
-  expr <- brainExpr[[d]]
+  expr <- brainExpr[[d]][1:1000,]
   samples <- sample_info[[d]][, -c(1:3)]
-  tab <- alply(samples, 2, function(s){
-    expr_in <- expr[, s==1] # samples in one network
-    expr_out <- expr[, s==0]# samples outside one network
-    t.test.table(expr_out, expr_in) # in compared to out
+  abefghi <- samples[, -which(colnames(samples) %in% c("Network_C", "Network_D"))] # Networks unaffected in PD
+  abefghi <- apply(abefghi, 1, function(x) Reduce(bitwOr, x))
+  cd <- samples[, c("Network_C", "Network_D")] # Networks affected in PD
+  tab <- alply(cd, 2, function(s){
+    a <- expr[, s==1] # expression in network C or D
+    b <- expr[, abefghi==1]# expression in network ABEFGHI
+    t.test.table(a, b) # in compared to out
   }, .dims = TRUE) # keep names
   simplify2array(tab) # 3D array: genes x measures x networks
 })
 ttest <- simplify2array(ttest) # 4D array: genes x measures x networks x donors
 saveRDS(ttest, file = "resources/ttest.rds")
-ttest <- readRDS("resources/ttest.rds")
+# ttest <- readRDS("resources/ttest.rds")
 
 # Meta-analysis of differential expression across donors
 summary_ttest <- aaply(ttest, c(1,3), function(g){ # For each Braak region pair and gene
@@ -56,18 +54,21 @@ summary_ttest <- aaply(summary_ttest, c(2,3), function(t){ # P-value corrected f
 saveRDS(summary_ttest, file = "resources/summary_ttest.rds")
 summary_ttest <- readRDS("resources/summary_ttest.rds")
 
-# Print number of diff. expr. genes
+# Print number of diff. expr. genes per donor and summary
 df <- aaply(summary_ttest, c(1,2), function(x){
-  # sum(x[, "BH"] < 0.05 & abs(x[, "Estimate"]) > 1)
   down <- x[which(x[, "Estimate"] < -1 & x[,"BH"] < 0.05),]
   up <- x[which(x[, "Estimate"] > 1 & x[,"BH"] < 0.05),]
-  c(down = nrow(down), up = nrow(up))
+  n1 <- nrow(down)
+  n2 <- nrow(up)
+  n1 <- ifelse(is.null(n1), 0, n1)
+  n2 <- ifelse(is.null(n2), 0, n2)
+  c(down = n1, up = n2)
 })
 df <- alply(df, 1, function(x)x)
 df <- Reduce(cbind, df)
 colnames(df) <- c("Downregulated in network C", "Upregulated in network C", "Downregulated in network D", "Upregulated in network D")
 df <- cbind(Donor = gsub("donor", "Donor ", rownames(df)), df)
-write.table(df, file = "number_of_degs.txt", row.names = FALSE, sep = "\t", quote = FALSE)
+# write.table(df, file = "number_of_degs.txt", row.names = FALSE, sep = "\t", quote = FALSE)
 
 # Get tables of DEGs
 degs <- alply(summary_ttest[, "summary", , ], 1, function(x){
@@ -79,24 +80,15 @@ degs <- alply(summary_ttest[, "summary", , ], 1, function(x){
 }, .dims = TRUE)
 saveRDS(degs, file = "resources/degs.rds")
 
-# Overlap of DEGs between network C and D
-#? Venn diagram
+# Print number of diff. expr. genes
+df <- sapply(degs, function(l){
+  sapply(l, nrow)
+})
 
-# ll_degs <- lapply(degs, function(l) unlist(lapply(l, rownames)))
-# overlap <- intersect(ll_degs$Network_C, ll_degs$Network_D)
-# tab <- t(summary_ttest[, "summary", overlap, "Estimate"])
+# Overlap of DEGs between network C and D
 ll_degs <- lapply(degs, function(l) lapply(l, rownames))
 ll_degs <- unlist(ll_degs, recursive = FALSE)[c(1,3,2,4)]
 names(ll_degs) <- gsub("_", " ", names(ll_degs))
 pdf("venn_degs.pdf", 6, 5)
 venn <- venn(ll_degs, ellipse = TRUE, zcolor = "style", cexil = 1.2, cexsn = 1)
 dev.off()
-# 
-# overlap <- lapply(ll_degs, function(l1) {
-#   lapply(ll_degs, function(l2) {
-#     intersect(l1, l2)
-#   })
-# })
-# df <- sapply(overlap, function(l){sapply(l, length)})
-# df <- cbind(degs_set = rownames(df), df)
-# write.table(df, file = "degs_overlap_CandD.txt", row.names = FALSE, sep = "\t", quote = FALSE)
