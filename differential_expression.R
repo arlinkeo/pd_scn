@@ -1,9 +1,7 @@
 # Differential expression between C or D and remaining networks A, B, E, F, G, H, and I
-
 library(plyr)
 library(metafor)
 library(venn)
-source("../pd_braak/PD/t.test.table.R")
 
 # Differential expression between network and rest of the brain (t-test)
 ttest <- lapply(donorNames, function(d){
@@ -96,6 +94,6 @@ write.table(df, file = "output/number_of_degs.txt", sep = "\t", quote = FALSE)
 ll_degs <- lapply(degs, function(l) lapply(l, rownames))
 ll_degs <- unlist(ll_degs, recursive = FALSE)[c(1,3,2,4)]
 names(ll_degs) <- gsub("_", " ", names(ll_degs))
-pdf("venn_degs.pdf", 6, 5)
+pdf("output/venn_degs.pdf", 6, 5)
 venn <- venn(ll_degs, ellipse = TRUE, zcolor = "style", cexil = 1.2, cexsn = 1)
 dev.off()
