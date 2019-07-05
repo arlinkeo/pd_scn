@@ -72,7 +72,7 @@ degs <- alply(summary_ttest[, "summary", , ], 1, function(x){
   up <- up[order(up[,"BH"]),]
   list(downregulated = down, upregulated = up)
 }, .dims = TRUE)
-saveRDS(degs, file = "output/degs.rds")
+# saveRDS(degs, file = "output/degs.rds")
 
 # Write table of DEGs
 lapply(names(degs), function(network){
