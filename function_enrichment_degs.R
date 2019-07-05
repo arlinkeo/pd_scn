@@ -12,6 +12,8 @@ bg <- addList(david, bg_list, idType = "ENTREZ_GENE_ID", listName = "AHBA backgr
 bg
 t <- 0.05 # EASE p-value threshold
 
+mkdirs("output/Functional_enrichment")
+
 lapply(names(degs), function(n){
   lapply(names(degs[[n]]), function(l){
     name <- paste(n, l, sep = "_")
@@ -19,8 +21,8 @@ lapply(names(degs), function(n){
     result <- addList(david, genes, idType = "ENTREZ_GENE_ID", listName = name, listType = "Gene")
     print(result)
     setCurrentBackgroundPosition(david, 1)
-    getFunctionalAnnotationChartFile(david, paste0("output/Functional_analyses/", name, "_goterms.txt"), threshold=t, count=2L)
-    getClusterReportFile(david, paste0("output/Functional_analyses/", name, "_termclusters.txt"), type = c("Term"))
+    getFunctionalAnnotationChartFile(david, paste0("output/Functional_enrichment/", name, "_goterms.txt"), threshold=t, count=2L)
+    getClusterReportFile(david, paste0("output/Functional_enrichment/", name, "_termclusters.txt"), type = c("Term"))
   })
 })
 
@@ -36,7 +38,7 @@ read.RdavidOutput <- function(fileName){
 go <- sapply(names(degs), function(n){
   sapply(names(degs[[n]]), function(l){
     name <- paste(n, l, sep = "_")
-    fName <- paste0("output/Functional_analyses/", name, "_goterms.txt")
+    fName <- paste0("output/", name, "_goterms.txt")
     print(fName)
     t <- read.RdavidOutput(fName)
     rows <- t$Benjamini < 0.05
@@ -49,5 +51,5 @@ go <- go[-which(sapply(go, nrow) == 0)]
 
 lapply(names(go), function(n){
   t <- go[[n]]
-  write.table(t, file = paste0("output/Functional_analyses/", n, ".txt"), row.names = FALSE, quote = FALSE, sep = "\t")
+  write.table(t, file = paste0("output/Functional_enrichment/BHcorrected_", n, ".txt"), row.names = FALSE, quote = FALSE, sep = "\t")
 })
