@@ -1,4 +1,4 @@
-# main script to run all the analyses
+# Main script to run all the analyses
 
 setwd("C:/Users/dkeo/surfdrive/pd_imaging_scn/pd_scn")
 options(stringsAsFactors = FALSE)
@@ -9,20 +9,24 @@ probeInfo <- read.csv(paste0(ahba_dir, "/probe_info_2018-11-18.csv"))
 brainExpr <- readRDS(paste0(ahba_dir, "/gene_expr.RDS"))
 
 # Source directory with functions
-fun_dir <- paste0(getwd(), "/functions")
-R.utils::sourceDirectory(fun_dir)
+fun_dir <- paste0(getwd(), "/functions/")
+R.utils::sourceDirectory(fun_dir, modifiedOnly = FALSE)
 
 # Useful variables
 donorNames <- c("donor9861", "donor10021", "donor12876", "donor14380", "donor15496", "donor15697")
 names(donorNames) <- donorNames
 
 # Run scripts
+Sys.time()
 source("samples_in_networks.R")
 Sys.time()
 source("differential_expression.R")
 Sys.time()
 source("functional_enrichment_degs.R")
 Sys.time()
+
+
+
 source("celltype_marker_conversion.R")
 Sys.time()
 source("celltype_enrichment_degs.R")
