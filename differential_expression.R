@@ -59,12 +59,13 @@ df <- aaply(summary_ttest, c(1,2), function(x){
 df <- alply(df, 1, function(x)x)
 df <- Reduce(cbind, df)
 colnames(df) <- c("Downregulated in network C", "Upregulated in network C", "Downregulated in network D", "Upregulated in network D")
+rownames(df)[7] <- "Summary"
 df <- cbind(Donor = gsub("donor", "Donor ", rownames(df)), df)
-df
+write.table(df, file = paste0("output/number_of_degs_per_donor.txt"), 
+            sep = "\t", quote = FALSE, row.names = FALSE)
 
 # Get tables of DEGs
 degs <- alply(summary_ttest[, "summary", , ], 1, function(x){
-  x <- cbind('gene'= entrezId2Name(rownames(x)), 'gene_id' = rownames(x), x)
   down <- x[which(x[, "Estimate"] < -1 & x[,"BH"] < 0.05),]
   down <- down[order(down[,"BH"]),]
   up <- x[which(x[, "Estimate"] > 1 & x[,"BH"] < 0.05),]
@@ -78,6 +79,7 @@ lapply(names(degs), function(network){
   direction <- degs[[network]]
   lapply(names(direction), function(d){
     t <- degs[[network]][[d]]
+    t <- cbind('gene'= entrezId2Name(rownames(t)), 'gene_id' = rownames(t), t)
     colnames(t) <- paste0(toupper(substr(colnames(t), 1, 1)), substring(colnames(t), 2))
     colnames(t)[7] <- "P-value"
     write.table(t, file = paste0("output/degs_", network,"_", d, ".txt"), 
