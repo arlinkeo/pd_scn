@@ -1,4 +1,7 @@
+# main script to run all the analyses
+
 setwd("C:/Users/dkeo/surfdrive/pd_imaging_scn/pd_scn")
+options(stringsAsFactors = FALSE)
 
 # AHBA data directory
 ahba_dir <-"C:/Users/dkeo/surfdrive/AHBA_Arlin"
@@ -16,7 +19,7 @@ source("samples_in_networks.R")
 
 
 Sys.time()
-source("pd_scn/ttest.R")
+source("pd_scn/differential_expression.R")
 Sys.time()
 source("pd_scn/Rdavid.R")
 Sys.time()
