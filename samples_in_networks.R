@@ -1,9 +1,4 @@
 # Select samples within SCNs
-setwd("C:/Users/dkeo/surfdrive/pd_imaging_scn")
-options(stringsAsFactors = FALSE)
-
-donorNames <- c("donor9861", "donor10021", "donor12876", "donor14380", "donor15496", "donor15697")
-names(donorNames) <- donorNames
 
 # Function to read mapping of AHBA samples to network
 read.network <- function(nw, d){
@@ -23,7 +18,7 @@ read.network <- function(nw, d){
 # Read and merge info of all networks
 networks <- paste0("Network_", LETTERS[1:9])
 networks <- sapply(networks, function(n){
-  file <- paste0("Results_Oleh/", n, ".txt")
+  file <- paste0("../Results_Oleh/", n, ".txt")
   f <- read.delim(file, skip = 1)
   read.network(f, donorNames)
 }, simplify = FALSE)
@@ -34,7 +29,7 @@ sample_info <- lapply(donorNames, function(d){
   })
   cbind(shared, nw_info)
 })
-saveRDS(sample_info, file = "resources/sample_info.rds")
+saveRDS(sample_info, file = "output/sample_info.rds")
 
 # Number of samples within network
 df <- data.frame(
@@ -42,4 +37,4 @@ df <- data.frame(
 )
 df <- rbind(df, 'Total' = apply(df, 2, sum))
 df <- cbind('Donors' = gsub("donor", "Donor ", rownames(df)), df)
-write.table(df, "number_of_samples.txt", row.names = FALSE, quote = FALSE, sep = "\t")
+write.table(df, "output/number_of_samples.txt", row.names = FALSE, quote = FALSE, sep = "\t")
