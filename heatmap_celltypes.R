@@ -13,7 +13,7 @@ probeInfo <- read.csv("../AHBA_Arlin/probe_info_2018-11-18.csv")
 entrezId2Name <- function (x) {probeInfo$gene_symbol[match(x, probeInfo$entrez_id)]} #Input is vector
 name2EntrezId <- function (x) {as.character(probeInfo$entrez_id[match(x, probeInfo$gene_symbol)])} #Input is vector
 
-brainExpr <- readRDS("../AHBA_Arlin/gene_expr.RDS")
+# brainExpr <- readRDS("../AHBA_Arlin/gene_expr.RDS")
 brainExprNorm <- lapply(brainExpr, function(x) t(scale(t(x))))
 sample_info <- readRDS("resources/sample_info.rds")
 
