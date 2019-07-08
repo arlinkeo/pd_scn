@@ -99,3 +99,23 @@ names(ll_degs) <- gsub("_", " ", names(ll_degs))
 pdf("output/venn_degs.pdf", 6, 5)
 venn <- venn(ll_degs, ellipse = TRUE, zcolor = "style", cexil = 1.2, cexsn = 1)
 dev.off()
+
+# Check presence PD variant-associated genes
+pdGenes <- list(hiImpact = c("SNCA", "LRRK2", "GBA", "VPS35", "PARK2", "PINK1", "PARK7", "ATP13A2", "PLA2G6", "FBXO7", "DNAJC6", "SYNJ1", 
+                             "EIF4G1", "DNAJC13", "CHCHD2", "C20orf30", "RIC3", "LRP10"), #TMEM230 is C20orf30
+                jansen2017 = c("INPP5F", "TMEM175", "ASH1L", "MAPT", "RIT1", "C14orf83", "STK39", "GPNMB", "BST1", 
+                               "SIPA1L2", "DLG2", "NUCKS1", "GCH1", "MCCC1", "FAM47E", "BCKDK", "TMPRSS9", "UBOX5", 
+                               "CCDC62", "SYNJ1", "EIF4G1", "FBXO7", "C20orf30", "POLG", "VPS13C", "PLA2G6"),
+                hla = c("HLA-DRA", "HLA-DRB1", "HLA-DRB5", "HLA-DQB1"),
+                'Chang et al. 2017' = read.table("../../pd_braak/chang2017_riskgenes.txt", comment.char = "#", sep = "\n", row.names = NULL, stringsAsFactors = FALSE)[, 1], 
+                'Nalls et al. 2014' = read.table("../../pd_braak/nalls2014_riskgenes.txt", comment.char = "#", sep = "\n", row.names = NULL, stringsAsFactors = FALSE)[, 1]
+)
+pdGenesID <- lapply(pdGenes, name2EntrezId)
+pdGenesID <- lapply(pdGenesID, function(x) x[!is.na(x)])
+lapply(pdGenesID, function(pd){
+  lapply(degs, function(network){
+    lapply(network, function(t){
+      intersect(rownames(t), pd)
+    })
+  })
+})
