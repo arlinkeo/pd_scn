@@ -20,6 +20,9 @@ R.utils::sourceDirectory(fun_dir, modifiedOnly = FALSE)
 donorNames <- c("donor9861", "donor10021", "donor12876", "donor14380", "donor15496", "donor15697")
 names(donorNames) <- donorNames
 
+# Make output folder
+dir.create("output")
+
 # Run scripts
 source("samples_in_networks.R")
 source("differential_expression.R")
