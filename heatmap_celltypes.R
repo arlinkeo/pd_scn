@@ -9,7 +9,7 @@ brainExprNorm <- lapply(brainExpr, function(x) t(scale(t(x))))
 #Heatmaps
 
 # Row (marker) annotations
-row_annot <- rep(names(markerlist), sapply(markerlist, length))#[-dup]
+# row_annot <- rep(names(markerlist), sapply(markerlist, length))#[-dup]
 # row_annot <- data.frame(celltype = celltype)
 # row_color <- rainbow(length(markerlist))
 # names(row_color) <- names(markerlist)
@@ -23,9 +23,9 @@ col_color <- list(ahba_color = ahba_color)
 
 heatmaps <- lapply(donorNames, function(d){
   expr <- brainExprNorm[[d]]
-  networks <- c("Network_C", "Network_D")
-  heatmaps <- lapply(networks, function(n){
-    
+  # networks <- c("Network_C", "Network_D")
+  heatmaps <- lapply(names(networks), function(n){
+    print(n)
     i <- sample_info[[d]][, n]
     
     # Mean expression of cell-types
@@ -47,7 +47,7 @@ heatmaps <- lapply(donorNames, function(d){
     
     df <- data.frame(ahba_color = colnames(t))
     ha <- HeatmapAnnotation(df, col = col_color, show_legend = FALSE)
-    ht <- if (n == "Network_C") 
+    ht <- if (n == "Network_A") 
       Heatmap(t, name = 'Z-Score\nexpression',
                   column_title = gsub("_", " ", n),
                   cluster_rows = FALSE,
@@ -76,6 +76,6 @@ heatmaps <- lapply(donorNames, function(d){
   heatmaps <- draw(heatmaps, column_title = gsub("donor", "Donor ", d), column_title_side = "top")
 })
 
-pdf("output/heatmap_celltypes.pdf", 18, 7)
+pdf("output/heatmap_celltypes_all.pdf", 60, 7)
 heatmaps
 dev.off()
