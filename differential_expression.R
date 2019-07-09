@@ -2,6 +2,8 @@
 library(plyr)
 library(metafor)
 library(venn)
+library(ggplot2)
+library(ggrepel)
 
 # Differential expression between network and rest of the brain (t-test)
 ttest <- lapply(donorNames, function(d){
@@ -119,3 +121,30 @@ lapply(pdGenesID, function(pd){
     })
   })
 })
+
+# Volcano plot of differentially expressed genes
+pdf(paste0("output/volcanoplot.pdf"), 4, 4)
+  lapply(dimnames(summary_ttest)[[1]], function(name){
+  n <- summary_ttest[name, "summary", , ]
+  
+  df <- data.frame(n[, c("Estimate", "pvalue", "BH")])
+  # df <- df[order(df$pvalue),]
+  # df$rank <- c(1:nrow(df))
+  # df$p.adj <- df$pvalue* (nrow(df)/df$rank)
+  # df <- df[, c(1,2,4,5,3)]
+  # write.table(df, "../correcting P-values with BH.txt", quote = FALSE, sep = "\t")
+  
+  df$info <- ifelse(abs(df$Estimate) > 1 & df$BH < 0.05, 1, 0)
+  df$info <- as.factor(df$info)
+  df$logp <- -log10(df$pvalue)
+  # df$label <- ifelse(abs(df$Estimate) > 2 & df$BH < 0.01, entrezId2Name(rownames(df)), "")
+  ggplot(df, aes(Estimate, logp, colour = info)) +
+    geom_point(size = 0.1) +
+    # geom_text_repel(aes(label=label), colour = "black", size = 4, nudge_x = 0) +
+    scale_colour_manual(values = c("0"="grey", "1"="red")) +
+    labs(x = "Mean difference", y = "-log10 P-value") +
+    ggtitle(paste("Differential expression in", name)) +
+    theme_classic() + theme(legend.position = "none")
+ 
+})
+  dev.off()
