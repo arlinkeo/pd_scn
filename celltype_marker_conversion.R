@@ -18,6 +18,7 @@ markerlist <- lapply(conversion_table, function(x) {
 # Table with number of markers in mouse and human
 df_size <- data.frame(Mouse = sapply(conversion_table, nrow), Human = sapply(markerlist, length))
 df_size <- cbind('Cell-type' = rownames(df_size), df_size)
+df_size <- do.call("cbind", split(df_size, c(rep(1, nrow(df_size)/2), rep(2, nrow(df_size)/2))))
 write.table(df_size, file = "output/number_of_celltype_markers.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 
 # Check for duplicate markers 
