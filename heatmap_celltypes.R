@@ -21,6 +21,7 @@ ahba_color <- paste0("#", ahba_color)
 names(ahba_color) <- ontology$acronym
 col_color <- list(ahba_color = ahba_color)
 
+# Heatmaps for each donor
 heatmaps <- lapply(donorNames, function(d){
   expr <- brainExprNorm[[d]]
   # networks <- c("Network_C", "Network_D")
