@@ -1,5 +1,6 @@
 # Cell-type enrichment of differentially expressed genes
 library(reshape2)
+library(plyr)
 
 # Filter cell-types with at least 6 markers
 markerlist6 <- markerlist[sapply(markerlist, length) >= 6]
