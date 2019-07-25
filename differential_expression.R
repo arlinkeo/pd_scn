@@ -1,9 +1,9 @@
 # Differential expression between C or D and remaining networks A, B, E, F, G, H, and I
-library(plyr)
-library(metafor)
-library(venn)
-library(ggplot2)
-library(ggrepel)
+library('plyr')
+library('metafor')
+library('venn')
+library('ggplot2')
+library('ggrepel')
 
 # Differential expression between network and rest of the brain (t-test)
 ttest <- lapply(donorNames, function(d){
@@ -101,50 +101,54 @@ names(ll_degs) <- gsub("_", " ", names(ll_degs))
 pdf("output/venn_degs.pdf", 6, 5)
 venn <- venn(ll_degs, ellipse = TRUE, zcolor = "style", cexil = 1.2, cexsn = 1)
 dev.off()
+overlap <- c(attributes(venn)$intersections$`Network C.downregulated:Network D.downregulated`, 
+             attributes(venn)$intersections$`Network C.upregulated:Network D.upregulated`)
 
-# Check presence PD variant-associated genes
-pdGenes <- list(hiImpact = c("SNCA", "LRRK2", "GBA", "VPS35", "PARK2", "PINK1", "PARK7", "ATP13A2", "PLA2G6", "FBXO7", "DNAJC6", "SYNJ1", 
-                             "EIF4G1", "DNAJC13", "CHCHD2", "C20orf30", "RIC3", "LRP10"), #TMEM230 is C20orf30
-                jansen2017 = c("INPP5F", "TMEM175", "ASH1L", "MAPT", "RIT1", "C14orf83", "STK39", "GPNMB", "BST1", 
-                               "SIPA1L2", "DLG2", "NUCKS1", "GCH1", "MCCC1", "FAM47E", "BCKDK", "TMPRSS9", "UBOX5", 
-                               "CCDC62", "SYNJ1", "EIF4G1", "FBXO7", "C20orf30", "POLG", "VPS13C", "PLA2G6"),
-                hla = c("HLA-DRA", "HLA-DRB1", "HLA-DRB5", "HLA-DQB1"),
-                'Chang et al. 2017' = read.table("../../pd_braak/chang2017_riskgenes.txt", comment.char = "#", sep = "\n", row.names = NULL, stringsAsFactors = FALSE)[, 1], 
-                'Nalls et al. 2014' = read.table("../../pd_braak/nalls2014_riskgenes.txt", comment.char = "#", sep = "\n", row.names = NULL, stringsAsFactors = FALSE)[, 1]
-)
-pdGenesID <- lapply(pdGenes, name2EntrezId)
-pdGenesID <- lapply(pdGenesID, function(x) x[!is.na(x)])
-lapply(pdGenesID, function(pd){
-  lapply(degs, function(network){
-    lapply(network, function(t){
-      intersect(rownames(t), pd)
-    })
-  })
-})
+# # Check presence PD variant-associated genes
+# pdGenes <- list(hiImpact = c("SNCA", "LRRK2", "GBA", "VPS35", "PARK2", "PINK1", "PARK7", "ATP13A2", "PLA2G6", "FBXO7", "DNAJC6", "SYNJ1", 
+#                              "EIF4G1", "DNAJC13", "CHCHD2", "C20orf30", "RIC3", "LRP10"), #TMEM230 is C20orf30
+#                 jansen2017 = c("INPP5F", "TMEM175", "ASH1L", "MAPT", "RIT1", "C14orf83", "STK39", "GPNMB", "BST1", 
+#                                "SIPA1L2", "DLG2", "NUCKS1", "GCH1", "MCCC1", "FAM47E", "BCKDK", "TMPRSS9", "UBOX5", 
+#                                "CCDC62", "SYNJ1", "EIF4G1", "FBXO7", "C20orf30", "POLG", "VPS13C", "PLA2G6"),
+#                 hla = c("HLA-DRA", "HLA-DRB1", "HLA-DRB5", "HLA-DQB1"),
+#                 'Chang et al. 2017' = read.table("../../pd_braak/chang2017_riskgenes.txt", comment.char = "#", sep = "\n", row.names = NULL, stringsAsFactors = FALSE)[, 1], 
+#                 'Nalls et al. 2014' = read.table("../../pd_braak/nalls2014_riskgenes.txt", comment.char = "#", sep = "\n", row.names = NULL, stringsAsFactors = FALSE)[, 1]
+# )
+# pdGenesID <- lapply(pdGenes, name2EntrezId)
+# pdGenesID <- lapply(pdGenesID, function(x) x[!is.na(x)])
+# lapply(pdGenesID, function(pd){
+#   lapply(degs, function(network){
+#     lapply(network, function(t){
+#       intersect(rownames(t), pd)
+#     })
+#   })
+# })
 
-# Volcano plot of differentially expressed genes
-pdf(paste0("output/volcanoplot.pdf"), 4, 4)
-  lapply(dimnames(summary_ttest)[[1]], function(name){
-  n <- summary_ttest[name, "summary", , ]
-  
-  df <- data.frame(n[, c("Estimate", "pvalue", "BH")])
-  # df <- df[order(df$pvalue),]
-  # df$rank <- c(1:nrow(df))
-  # df$p.adj <- df$pvalue* (nrow(df)/df$rank)
-  # df <- df[, c(1,2,4,5,3)]
-  # write.table(df, "../correcting P-values with BH.txt", quote = FALSE, sep = "\t")
-  
+xlim <- extendrange(range(summary_ttest[, "summary", , "Estimate"]))
+ylim <- c(0, max(-log10(summary_ttest[, "summary", , "pvalue"])))
+
+volcanoplots <- lapply(dimnames(summary_ttest)[[1]], function(name){
+  df <- data.frame(summary_ttest[name, "summary", , c("Estimate", "pvalue", "BH")])
   df$info <- ifelse(abs(df$Estimate) > 1 & df$BH < 0.05, 1, 0)
+  df$info <- ifelse(rownames(df) %in% overlap, 2, df$info)
   df$info <- as.factor(df$info)
   df$logp <- -log10(df$pvalue)
-  # df$label <- ifelse(abs(df$Estimate) > 2 & df$BH < 0.01, entrezId2Name(rownames(df)), "")
-  ggplot(df, aes(Estimate, logp, colour = info)) +
-    geom_point(size = 0.1) +
-    # geom_text_repel(aes(label=label), colour = "black", size = 4, nudge_x = 0) +
-    scale_colour_manual(values = c("0"="grey", "1"="red")) +
-    labs(x = "Mean difference", y = "-log10 P-value") +
-    ggtitle(paste("Differential expression in", name)) +
+  df$label <- entrezId2Name(rownames(df))
+  df$label[-tail(order(abs(df$Estimate)), 10)] <- "" # labels of top 10
+  
+  ggplot(df, aes(Estimate, logp, colour = info, label = label)) +
+    geom_point(size = .1) +
+    geom_text_repel(force = 5, colour = "black", size = 2.5, nudge_y = 0.1, 
+                    fontface = "italic", segment.size = .1) +
+    scale_colour_manual(values = c("#999999", "#E69F00", "#56B4E9")) + # color blind friendly pallette
+    scale_x_continuous(limits = xlim) +
+    scale_y_continuous(limits = ylim) +
+    labs(x = "FC", y = expression('-log'[10]*' '*italic('P')*'-value')) +
+    ggtitle(paste("Differential expression in", gsub("_", " ", name))) +
     theme_classic() + theme(legend.position = "none")
- 
 })
-  dev.off()
+
+pdf("output/volcanoplots.pdf", 4, 3)
+volcanoplots
+dev.off()
+
