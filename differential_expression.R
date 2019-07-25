@@ -144,8 +144,9 @@ volcanoplots <- lapply(dimnames(summary_ttest)[[1]], function(name){
     scale_x_continuous(limits = xlim) +
     scale_y_continuous(limits = ylim) +
     labs(x = "FC", y = expression('-log'[10]*' '*italic('P')*'-value')) +
-    ggtitle(paste("Differential expression in", gsub("_", " ", name))) +
-    theme_classic() + theme(legend.position = "none")
+    ggtitle(paste(gsub("_", " ", name))) +
+    theme_classic() + 
+    theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
 })
 
 pdf("output/volcanoplots.pdf", 4, 3)
