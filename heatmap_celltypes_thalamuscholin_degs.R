@@ -15,7 +15,7 @@ tc_degs <- unique(unlist(tc_degs))
 
 heatmaps <- lapply(donorNames, function(d){
   expr <- brainExprNorm[[d]]
-  heatmaps <- lapply(names(networks), function(n){
+  heatmaps <- lapply(names(networks)[3:4], function(n){
     print(paste(d, "; ", n))
     i <- sample_info[[d]][, n]
     
@@ -36,7 +36,7 @@ heatmaps <- lapply(donorNames, function(d){
     
     df <- data.frame(ahba_color = colnames(t))
     ha <- HeatmapAnnotation(df, col = col_color, show_legend = FALSE)
-    ht <- if (n == "Network_A") 
+    ht <- if (n == "Network_C") 
       Heatmap(t, name = 'Z-Score\nexpression',
               column_title = gsub("_", " ", n),
               cluster_rows = FALSE,
