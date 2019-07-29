@@ -11,7 +11,8 @@ nws <- networks #c("Network_C", "Network_D")
 
 # Expression of cell-types in networks
 expr1 <- lapply(donorNames, function(d){
-  sapply(names(nws), function(n){
+  l <- sapply(names(nws), function(n){
+    e <- brainExprNorm[[d]]
     # Mean expression of cell-types
     t <- t(sapply(markerlist, function(markers){
       e <- brainExprNorm[[d]][markers, sample_info[[d]][, n]==1]
@@ -29,16 +30,15 @@ expr1 <- lapply(donorNames, function(d){
     rownames(t) <- gsub("_", " ", rownames(t))
     t
   }, simplify = FALSE)
+  names(l) <- gsub("_", " ", names(l))
+  l
 })
 
 # Expression averaged per celltype and network
-expr2 <- lapply(names(expr1), function(d){
-  t <- sapply(names(expr1[[d]]), function(n){
-    e <- expr1[[d]][[n]]
-    apply(e, 1, mean)
+expr2 <- lapply(expr1, function(l){
+  sapply(l, function(t){
+    apply(t, 1, mean)
   })
-  colnames(t) <- gsub("_", " ", colnames(t))
-  t
 })
 
 # Expression averaged per celltype and network across donors
@@ -77,7 +77,8 @@ pdf("output/heatmap_celltypes_expanded.pdf", 50, 7)
 heatmaps
 dev.off()
 
-heatmaps <- lapply(expr2, function(t){
+heatmaps <- lapply(donorNames, function(d){
+  t <- expr2[[d]]
   Heatmap(t, name = 'Z-Score\nexpression',
           column_title = gsub("donor", "Donor ", d),
           cluster_rows = FALSE,
@@ -113,7 +114,7 @@ sapply(tc_degs, function(n){
 tc_degs <- unique(unlist(tc_degs))
 
 heatmaps <- lapply(donorNames, function(d){
-  heatmaps <- lapply(names(expr1[[d]]), function(n){
+  heatmaps <- lapply(names(nws), function(n){
     print(paste(d, "; ", n))
     
     # Expression of thalmuscholin DEGs
@@ -124,7 +125,7 @@ heatmaps <- lapply(donorNames, function(d){
     t <- t[, order(ontology[ontology_rows, c("graph_order")])]
    
     # Mean across groups of regions based on acronym
-    t <- sapply(region_groups, function(rg){
+    t <- sapply(unique(colnames(t)), function(rg){
       cols <- which(colnames(t) == rg)
       if(length(cols) > 1) apply(t[, cols], 1, mean) else t[, cols]
     })
@@ -140,8 +141,7 @@ heatmaps <- lapply(donorNames, function(d){
             cluster_columns = FALSE,
             column_names_side = c("top"), 
             row_names_side = c("left"),
-            top_annotation = ha,
-            width = unit(ncol(t)*0.8, "lines")
+            top_annotation = ha
     )
   })
   heatmaps <- Reduce('+',heatmaps)
