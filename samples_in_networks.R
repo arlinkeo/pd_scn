@@ -38,3 +38,16 @@ df <- data.frame(
 df <- rbind(df, 'Total' = apply(df, 2, sum))
 df <- cbind('Donors' = gsub("donor", "Donor ", rownames(df)), df)
 write.table(df, "output/number_of_samples.txt", row.names = FALSE, quote = FALSE, sep = "\t")
+
+# # Check overlap of samples with stress network
+# scz_network <- lapply(donorNames, function(d){
+#   read.table(file = paste0("C:/Users/dkeo/surfdrive/MandySCZpaper/", d, ".txt"), header = TRUE, sep ="\t")
+# })
+# sampleOverlap <- lapply(donorNames, function(d){
+#   sapply(networks, function(n){
+#     scz <- scz_network[[d]]$Inside.Y.N
+#     scn <- n[[d]]$Inside.y.n
+#     df <- data.frame(scz, scn, both = bitwAnd(scn, scz))
+#     apply(df, 2, sum)
+#   })
+# })
