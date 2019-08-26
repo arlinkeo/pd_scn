@@ -66,40 +66,34 @@ q1 <- max(sapply(brainExprNorm, function(x) quantile(abs(x), 0.9)))
 col_fun <- colorRamp2(c(-q1, 0, q1), c("blue", "#EEEEEE", "red"))
 
 # Simplified heatmap
-heatmaps <- lapply(dimnames(expr4)[[2]], function(d){
-  t <- expr4[, d,]
-  Heatmap(t, name = 'Z-Score\nexpression', 
-          col = col_fun,
-          column_title = gsub("donor", "Donor ", d),
-          cluster_rows = FALSE,
-          cluster_columns = FALSE,
-          column_names_side = c("top"), 
-          row_names_side = c("left"),
-          width = unit(ncol(t)*.8, "lines"), 
-          height = unit(nrow(t)*.8, "lines")
-  )
-})
-heatmaps <- Reduce('+',heatmaps)
-pdf("output/heatmap_celltypes_simple.pdf", 13.3, 6)
-heatmaps
+t <- alply(expr4, 2, data.frame, .dims = TRUE)
+names(t) <- gsub("donor", "Donor ", names(t))
+split <- rep(names(t), sapply(t, ncol))
+t <- t(Reduce(cbind, t))
+rownames(t) <- gsub("\\.", " ", rownames(t))
+hm <- Heatmap(t, name = 'Z-Score\nexpression', 
+              row_split = split,
+              col = col_fun,
+              cluster_rows = FALSE,
+              cluster_columns = FALSE,
+              row_names_gp = gpar(fontsize = 8),
+              # row_names_side = c("left"),
+              row_title_gp = gpar(fontsize = 10),
+              row_title_rot = 0,
+              column_names_side = c("top"),
+              column_names_gp = gpar(fontsize = 8),
+              column_names_rot = 45,
+              width = unit(ncol(t)*.8, "lines"), 
+              height = unit(nrow(t)*.8, "lines")
+)
+pdf("output/heatmap_celltypes_simple.pdf", 7, 11.1)
+hm
 dev.off()
 
-# Heatmap ThalamusCholin DEGs
-tc_degs <- lapply(degs, function(n){
-  lapply(n, function(l){
-    intersect(rownames(l), markerlist6$ThalamusCholin)
-  })
-})
-sapply(tc_degs, function(n){
-  sapply(n, function(l){
-    paste(entrezId2Name(l), collapse = ", ")
-  })
-})
-tc_degs <- tc_degs$Network_D$upregulated # select markers upregulated in D
-
-heatmaps <- sapply(c("Network C", "Network D"), function(n){
-  heatmaps <- lapply(donorNames, function(d){
-    t <- expr2[[n]][[d]][tc_degs, ]
+# Heatmap of thalamus cholinergic marker genes
+heatmaps <- lapply(donorNames, function(d){
+  hm <- lapply(names(expr2)[3:4], function(n){
+    t <- expr2[[n]][[d]][unique(unlist(ct_degs)), ]
     rownames(t) <- entrezId2Name(rownames(t))
     ht_opt(heatmap_row_names_gp = gpar(fontface = "italic"))
     ha <- HeatmapAnnotation(
@@ -109,7 +103,7 @@ heatmaps <- sapply(c("Network C", "Network D"), function(n){
       show_annotation_name = FALSE)
     Heatmap(t, name = 'Z-Score\nexpression',
             col = col_fun,
-            column_title = gsub("donor", "Donor ", d),
+            column_title = n,
             cluster_rows = FALSE,
             cluster_columns = FALSE,
             column_names_side = c("top"), 
@@ -119,9 +113,9 @@ heatmaps <- sapply(c("Network C", "Network D"), function(n){
             height = unit(nrow(t)*.8, "lines")
     )
   })
-  ht_list <- Reduce('+', heatmaps)
-  draw(ht_list, column_title = n, column_title_gp = gpar(fontface = "bold", fontsize = 18))
-}, simplify = FALSE) 
+  ht_list <- Reduce('+', hm)
+  draw(ht_list, column_title = gsub("donor", "Donor ", d), column_title_gp = gpar(fontface = "bold", fontsize = 18))
+})
 
 pdf_size <- apply(sapply(heatmaps, function(h){
   s <- sapply(h@ht_list, function(d){
@@ -131,19 +125,19 @@ pdf_size <- apply(sapply(heatmaps, function(h){
   c(width = sum(s["width",])/5+3, height = s["height",1]/5+2)
 }), 1, max)
 
-pdf("output/heatmap_celltypes_thalamuscholin_degs.pdf", pdf_size[1], pdf_size[2])
+pdf("output/heatmap_celltypes_degs.pdf", pdf_size[1], pdf_size[2])
 heatmaps
 dev.off()
 
-acronyms <- unique(unlist(lapply(heatmaps, function(n){
-  unlist(lapply(n@ht_list, function(d){
-    colnames(d@matrix)
+acronyms <- unique(unlist(lapply(heatmaps, function(d){
+  unlist(lapply(d@ht_list, function(n){
+    colnames(n@matrix)
   }))
 })))
 acronyms <- ontology[ontology$acronym %in% acronyms, c("acronym", "name")]
 acronyms$name <- gsub(", left|, right", "", acronyms$name)
 acronyms <- unique(acronyms)
 acronyms <- acronyms[-(which(duplicated(acronyms$acronym))-1),] # remove duplicates with typo's
-acronyms <- unname(apply(acronyms, 1, function(x)paste(x, collapse = ": ")))
-acronyms <- paste(acronyms, collapse = "; ")
-acronyms
+substr(colnames(acronyms), 1, 1) <- toupper(substr(colnames(acronyms), 1, 1))
+substr(acronyms$Name, 1, 1) <- toupper(substr(acronyms$Name, 1, 1))
+write.table(acronyms, file = "output/region_acronyms.txt", row.names = FALSE, quote = FALSE, sep = "\t")
