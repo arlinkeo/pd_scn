@@ -14,6 +14,7 @@ markerlist <- lapply(conversion_table, function(x) {
   l <- x[, "9606_ID"] # Human entrez IDs
   intersect(l, ahba.genes())# Filter for genes present in AHBA
 })
+saveRDS(markerlist, file = "output/markerlist.rds")
 
 # Table with number of markers in mouse and human
 df_size <- data.frame(Mouse = sapply(conversion_table, nrow), Human = sapply(markerlist, length))
