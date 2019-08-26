@@ -1,4 +1,4 @@
-# Main script to run all the analyses
+# Main script to run all analyses
 
 setwd("C:/Users/dkeo/surfdrive/pd_imaging_scn/pd_scn")
 options(stringsAsFactors = FALSE)
@@ -20,6 +20,9 @@ R.utils::sourceDirectory(fun_dir, modifiedOnly = FALSE)
 donorNames <- c("donor9861", "donor10021", "donor12876", "donor14380", "donor15496", "donor15697")
 names(donorNames) <- donorNames
 
+network_names <- c(Network_C = "Posterior cingulate network", 
+                   Network_D = "Anterior cingulate network")
+
 # Make output folder
 dir.create("output")
 
@@ -31,3 +34,4 @@ source("celltype_marker_conversion.R")
 source("celltype_enrichment_degs.R")
 source("heatmap_celltypes.R")
 source("thalamus_samples.R")
+source("disease_enrichment_degs.R")
