@@ -21,3 +21,24 @@ ct_enrichment
 lapply(ct_enrichment, function(x){
   paste(paste0(names(x), " cells (P", " = ", x, ")"), collapse = ", ")
 })
+
+# Check any overlap of DEGs and marker genes
+ct_degs <- lapply(markerlist, function(l1){
+  lapply(degs, function(l2){
+      intersect(l1, rownames(l2$upregulated))
+    })
+})
+ct <- sapply(ct_degs, function(m){
+  !any(sapply(m, function(n){
+    length(n)
+  }) == 0)
+})
+ct_degs <- ct_degs[ct]
+df <- sapply(ct_degs, function(n){
+  sapply(n, function(m){
+    paste(entrezId2Name(m), collapse = ", ")
+  })
+})
+df <- cbind(Network = gsub("Network_", "", rownames(df)), df)
+write.table(df, file = "output/celltype_degs.txt", row.names = FALSE, quote = FALSE, sep = "\t")  
+  
