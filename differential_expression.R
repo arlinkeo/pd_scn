@@ -24,7 +24,7 @@ saveRDS(ttest, file = "output/ttest.rds")
 # ttest <- readRDS("output/ttest.rds")
 
 # Meta-analysis of differential expression across donors
-summary_ttest <- aaply(ttest, c(1,3), function(g){ # For each Braak region pair and gene
+summary_ttest <- aaply(ttest, c(1,3), function(g){
   gene <- t(g)
   t <- escalc(measure = "MD",  # Get estimates, variance (needed for meta-analysis) and confidence intervals (region B vs. A)
               m1i = gene[, "meanB"], m2i = gene[, "meanA"], # estimate
@@ -127,8 +127,9 @@ overlap <- c(attributes(venn)$intersections$`Network C.downregulated:Network D.d
 xlim <- extendrange(range(summary_ttest[, "summary", , "Estimate"]))
 ylim <- c(0, max(-log10(summary_ttest[, "summary", , "pvalue"])))
 
-volcanoplots <- lapply(dimnames(summary_ttest)[[1]], function(name){
-  df <- data.frame(summary_ttest[name, "summary", , c("Estimate", "pvalue", "BH")])
+summary <- summary_ttest[, "summary", , c("Estimate", "pvalue", "BH")]
+volcanoplots <- lapply(dimnames(summary)[[1]], function(name){
+  df <- data.frame(summary[name, ,])
   df$info <- ifelse(abs(df$Estimate) > 1 & df$BH < 0.05, 1, 0)
   df$info <- ifelse(rownames(df) %in% overlap, 2, df$info)
   df$info <- as.factor(df$info)
@@ -144,9 +145,9 @@ volcanoplots <- lapply(dimnames(summary_ttest)[[1]], function(name){
     scale_x_continuous(limits = xlim) +
     scale_y_continuous(limits = ylim) +
     labs(x = "FC", y = expression('-log'[10]*' '*italic('P')*'-value')) +
-    ggtitle(paste(gsub("_", " ", name))) +
+    ggtitle(network_names[name]) +
     theme_classic() + 
-    theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
+    theme(legend.position = "none", plot.title = element_text(size = 10))
 })
 
 pdf("output/volcanoplots.pdf", 4, 3)
