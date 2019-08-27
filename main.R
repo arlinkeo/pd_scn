@@ -29,7 +29,7 @@ dir.create("output")
 # Run scripts
 source("samples_in_networks.R")
 source("differential_expression.R")
-source("functional_enrichment_degs.R")
+source("pathway_analysis.R")
 source("celltype_marker_conversion.R")
 source("celltype_enrichment_degs.R")
 source("heatmap_celltypes.R")
