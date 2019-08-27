@@ -25,8 +25,8 @@ lapply(ct_enrichment, function(x){
 # Check any overlap of DEGs and marker genes
 ct_degs <- lapply(markerlist, function(l1){
   lapply(degs, function(l2){
-      intersect(l1, rownames(l2$upregulated))
-    })
+    intersect(l1, rownames(l2$upregulated))
+  })
 })
 ct <- sapply(ct_degs, function(m){
   !any(sapply(m, function(n){
@@ -34,11 +34,14 @@ ct <- sapply(ct_degs, function(m){
   }) == 0)
 })
 ct_degs <- ct_degs[ct]
-df <- sapply(ct_degs, function(n){
-  sapply(n, function(m){
-    paste(entrezId2Name(m), collapse = ", ")
-  })
-})
-df <- cbind(Network = gsub("Network_", "", rownames(df)), df)
+
+df <- summary_ttest[, "summary",unique(unlist(ct_degs)), c("Estimate", "BH")]
+df <- asplit(df, 1)
+df <- Reduce(cbind, df)
+colnames(df) <- paste0(c("C.", "D."), colnames(df))
+df[, c(1,3)] <- round(df[, c(1,3)], digits = 2)
+df[, c(2,4)] <- format(df[, c(2,4)], digits = 3, scientific = TRUE)
+ct <- unique(melt(ct_degs)[, -2])[,2]
+df <- data.frame(Gene = entrezId2Name(rownames(df)), Marker = ct, df)
 write.table(df, file = "output/celltype_degs.txt", row.names = FALSE, quote = FALSE, sep = "\t")  
   
