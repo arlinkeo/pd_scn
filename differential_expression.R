@@ -76,14 +76,17 @@ degs <- alply(summary_ttest[, "summary", , ], 1, function(x){
 }, .dims = TRUE)
 # saveRDS(degs, file = "output/degs.rds")
 
-# Write table of DEGs
+# Write tables of DEGs
 lapply(names(degs), function(network){
   direction <- degs[[network]]
   lapply(names(direction), function(d){
     t <- degs[[network]][[d]]
+    t <- t[, -c(2,6)]
+    t[, c(1:3)] <- round(t[, c(1:3)], digits = 2)
+    t[, c(4:5)] <- format(t[, c(4:5)], digits = 3, scientific = T)
     t <- cbind('gene'= entrezId2Name(rownames(t)), 'gene_id' = rownames(t), t)
     colnames(t) <- paste0(toupper(substr(colnames(t), 1, 1)), substring(colnames(t), 2))
-    colnames(t)[7] <- "P-value"
+    colnames(t)[c(2,3,6)] <- c("Entrez ID", "Fold-change", "P-value")
     write.table(t, file = paste0("output/degs_", network,"_", d, ".txt"), 
                 sep = "\t", quote = FALSE, row.names = FALSE)
   })
@@ -124,7 +127,7 @@ overlap <- c(attributes(venn)$intersections$`Network C.downregulated:Network D.d
 #   })
 # })
 
-xlim <- extendrange(range(summary_ttest[, "summary", , "Estimate"]))
+xlim <- max(summary_ttest[, "summary", , "Estimate"])
 ylim <- c(0, max(-log10(summary_ttest[, "summary", , "pvalue"])))
 
 summary <- summary_ttest[, "summary", , c("Estimate", "pvalue", "BH")]
@@ -136,21 +139,20 @@ volcanoplots <- lapply(dimnames(summary)[[1]], function(name){
   df$logp <- -log10(df$pvalue)
   df$label <- entrezId2Name(rownames(df))
   df$label[-tail(order(abs(df$Estimate)), 10)] <- "" # labels of top 10
+  cbf <- if (name == "Network_C") c("#999999", "#0072B2", "#F0E442") else c("#999999", "#CC79A7", "#F0E442") # color blind friendly pallette
   
   ggplot(df, aes(Estimate, logp, colour = info, label = label)) +
     geom_point(size = .1) +
     geom_text_repel(force = 5, colour = "black", size = 2.5, nudge_y = 0.1, 
                     fontface = "italic", segment.size = .1) +
-    scale_colour_manual(values = c("#999999", "#E69F00", "#56B4E9")) + # color blind friendly pallette
-    scale_x_continuous(limits = xlim) +
+    scale_colour_manual(values = cbf) + 
+    scale_x_continuous(limits = c(-xlim, xlim)) +
     scale_y_continuous(limits = ylim) +
     labs(x = "FC", y = expression('-log'[10]*' '*italic('P')*'-value')) +
     ggtitle(network_names[name]) +
     theme_classic() + 
     theme(legend.position = "none", plot.title = element_text(size = 10))
 })
-
 pdf("output/volcanoplots.pdf", 4, 3)
 volcanoplots
 dev.off()
-
