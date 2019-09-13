@@ -17,8 +17,4 @@ lapply(names(pathways), function(n){
 })
 
 # overlap between C and D
-o <- intersect(pathways$`Network C.upregulated`$Description, pathways$`Network D.upregulated`$Description)
-substr(o, 1, 1) <- tolower(substr(o, 1, 1))
-paste0(o, collapse = ", ")
-
-df <- Reduce(rbind, pathways)
+intersect(pathways$`Network C.upregulated`$Description, pathways$`Network D.upregulated`$Description)
