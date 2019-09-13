@@ -8,12 +8,10 @@ library(abind)
 brainExprNorm <- lapply(brainExpr, function(x) t(scale(t(x))))
 
 # Networks to plots
-nws <- networks #c("Network_C", "Network_D")
-
 ########## Prepare expression data ##########
 
 # Expression of cell-type markers in networks
-expr1 <- sapply(names(nws), function(n){
+expr1 <- sapply(names(networks), function(n){
   l <- lapply(donorNames, function(d){
     brainExprNorm[[d]][unlist(markerlist), sample_info[[d]][, n]==1]
   })
@@ -92,7 +90,7 @@ dev.off()
 
 # Heatmap of thalamus cholinergic marker genes
 heatmaps <- lapply(donorNames, function(d){
-  hm <- lapply(names(expr2)[3:4], function(n){
+  hm <- lapply(names(expr2)[3:4], function(n){ # Only for network C & D
     t <- expr2[[n]][[d]][unique(unlist(ct_degs)), ]
     rownames(t) <- entrezId2Name(rownames(t))
     ht_opt(heatmap_row_names_gp = gpar(fontface = "italic"))
@@ -141,3 +139,28 @@ acronyms <- acronyms[-(which(duplicated(acronyms$acronym))-1),] # remove duplica
 substr(colnames(acronyms), 1, 1) <- toupper(substr(colnames(acronyms), 1, 1))
 substr(acronyms$Name, 1, 1) <- toupper(substr(acronyms$Name, 1, 1))
 write.table(acronyms, file = "output/region_acronyms.txt", row.names = FALSE, quote = FALSE, sep = "\t")
+
+# Thalamic samples within networks
+thalamus_id <- ontology[ontology$name == "thalamus", "id"]
+l <- sapply(c("Network_C", "Network_D"), function(n){
+  s <- lapply(donorNames, function(d){
+    info <- networks[[n]][[d]]
+    s <- info[info$Inside.y.n == 1, "Sample_id"]
+    ontology_rows <- match(s, ontology$id)
+    t <- ontology[ontology_rows, c("acronym", "name", "structure_id_path")]
+    t[grep(thalamus_id, t$structure_id_path), ]
+  })
+  s <- melt(s)
+  colnames(s)[4] <- "donor"
+  s <- s[order(s$structure_id_path),]
+  
+  parent_structures <- lapply(s$structure_id_path, function(s){
+    s <- unlist(strsplit(s, "/"))
+    s <- s[-c(1:which(s == thalamus_id))]
+    s <- ontology[ontology$id %in% s, "name"]
+    paste(s, collapse = "/")
+  })
+  s$structure_name_path <- parent_structures
+  s[, -c(2,3)]
+}, simplify = FALSE)
+
