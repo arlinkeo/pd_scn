@@ -17,7 +17,6 @@ ct_enrichment <- alply(ct_enrichment, c(2,3), function(x){
   format(x[x < 0.05], digits = 3, scientific = TRUE)
 })
 names(ct_enrichment) <- apply(attributes(ct_enrichment)$split_labels, 1, paste, collapse = "_")
-ct_enrichment
 lapply(ct_enrichment, function(x){
   paste(paste0(names(x), " cells (P", " = ", x, ")"), collapse = ", ")
 })
