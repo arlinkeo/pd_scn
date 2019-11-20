@@ -1,11 +1,25 @@
 # Cell-type enrichment of differentially expressed genes
 library(reshape2)
 library(plyr)
+library(DescTools)
+library(abind)
 
 # Filter cell-types with at least 6 markers
 markerlist6 <- markerlist[sapply(markerlist, length) >= 6]
 cat(paste("Cell-types with at least 6 genes:\n", 
             tolower(gsub("_", " ", paste(names(markerlist6), collapse = ", ")))))
+
+# Cell-type enrichment of DEGs
+or <- odd.ratio.table(ll_degs, markerlist6)
+or <- round(or, digits = 2)
+pval <- hyper.test.table(ll_degs, markerlist6)
+rows <- apply(pval, 1, function(x) any(x < 0.05))
+pval <- -log10(pval)
+t <- abind('OR' = or[rows, ], 'P-value' =  pval[rows, ], along = 0, use.anon.names = TRUE)
+dimnames(t)[[2]] <- gsub(".upregulated", "", dimnames(t)[[2]])
+dimnames(t)[[2]] <- gsub("_", " ", dimnames(t)[[2]])
+rowOrder <- order(apply(t[,,"OR"], 1, max))
+t <- t[rowOrder, ,]
 
 # Run cell-type enrichment with hyper.test
 ct_enrichment <- lapply(degs, function(n){
