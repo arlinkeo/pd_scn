@@ -30,7 +30,8 @@ p <- ggplot(df, aes(x=disease, y=value, fill=network)) +
   theme_bw() + 
   theme(axis.text.x = element_text(angle = -45, hjust = 0), 
         legend.title = element_blank(),
-        axis.title = element_blank()) +
+        axis.title = element_blank(),
+        panel.grid.major.x = element_blank()) +
   facet_grid(measure ~., scales = "free")
 pdf("output/disease_enrichment.pdf", 11, 5)
 p
