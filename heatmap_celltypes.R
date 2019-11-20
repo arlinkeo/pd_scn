@@ -1,8 +1,6 @@
 # Expression heatmap of cell-type markers
-
 library(ComplexHeatmap)
 library(circlize)
-library(abind)
 
 # Normalize expression across samples
 brainExprNorm <- lapply(brainExpr, function(x) t(scale(t(x))))
