@@ -27,6 +27,7 @@ colnames(df) <- c("disease", "network", "measure", "value")
 df$disease <- factor(df$disease, levels = rev(unique(df$disease)))
 p <- ggplot(df, aes(x=disease, y=value, fill=network)) +
   geom_bar(stat="identity", position=position_dodge()) +
+  scale_y_continuous(expand = expand_scale(c(0, 0.05))) +
   theme_bw() + 
   theme(axis.text.x = element_text(angle = -45, hjust = 0), 
         legend.title = element_blank(),
