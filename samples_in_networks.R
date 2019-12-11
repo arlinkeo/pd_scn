@@ -52,39 +52,39 @@ write.table(df, "output/number_of_samples.txt", row.names = FALSE, quote = FALSE
 #   })
 # })
 
-# # Percentage cortical samples
-# # Function to select all sample IDs of a brain structure
-# sample.ids <- function(roi){
-#   id <- ontology[ontology$name == roi, "id"]
-#   rows <- grep(id, ontology$structure_id_path)
-#   ontology$id[rows]
-# }
-# # Get column indices of roi per donor
-# sample.idx <- function(id){
-#   lapply(brainExpr, function(e){
-#     colnames <- colnames(e)
-#     ids <- intersect(id, colnames)
-#     cols <- as.numeric(colnames %in% ids)
-#     # names(cols) <- colnames[cols]
-#     cols # column indices
-#   })
-# }
-# ctx <- sample.idx(sample.ids("cerebral cortex"))
-# network_idx <- lapply(networks, function(x) lapply(x, function(y) y $Inside.y.n))
-# abefghi <- lapply(donorNames, function(d) {
-#   v <- lapply(networks[-c(3,4)], function(x) {
-#     x[[d]]$Inside.y.n
-#   })
-#   Reduce(bitwOr, v)
-# })
-# network_idx <- list(Network_C = network_idx$Network_C, Network_D = network_idx$Network_D, Network_ABEFGHI = abefghi)
-# sapply(network_idx, function(x)sapply(x, sum))
-# percentage <- sapply(network_idx, function(x){
-#   sapply(donorNames, function(d){
-#     n <- x[[d]]
-#     c <- ctx[[d]]
-#     i <- bitwAnd(n, c)
-#     sum(i)/sum(n)*100
-#   })
-# })
-# apply(percentage, 2, mean)
+# Percentage cortical samples
+# Function to select all sample IDs of a brain structure
+sample.ids <- function(roi){
+  id <- ontology[ontology$name == roi, "id"]
+  rows <- grep(id, ontology$structure_id_path)
+  ontology$id[rows]
+}
+# Get column indices of roi per donor
+sample.idx <- function(id){
+  lapply(brainExpr, function(e){
+    colnames <- colnames(e)
+    ids <- intersect(id, colnames)
+    cols <- as.numeric(colnames %in% ids)
+    # names(cols) <- colnames[cols]
+    cols # column indices
+  })
+}
+h <- sample.idx(sample.ids("habenular nuclei"))
+network_idx <- lapply(networks, function(x) lapply(x, function(y) y $Inside.y.n))
+abefghi <- lapply(donorNames, function(d) {
+  v <- lapply(networks[-c(3,4)], function(x) {
+    x[[d]]$Inside.y.n
+  })
+  Reduce(bitwOr, v)
+})
+network_idx <- list(Network_C = network_idx$Network_C, Network_D = network_idx$Network_D, Network_ABEFGHI = abefghi)
+sapply(network_idx, function(x)sapply(x, sum))
+percentage <- sapply(network_idx, function(x){
+  sapply(donorNames, function(d){
+    n <- x[[d]]
+    c <- h[[d]]
+    i <- bitwAnd(n, c)
+    sum(i)/sum(n)*100
+  })
+})
+apply(percentage, 2, mean)
