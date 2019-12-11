@@ -25,15 +25,18 @@ t <- t[rowOrder, ,]
 df <- melt(t)
 colnames(df) <- c("disease", "network", "measure", "value")
 df$disease <- factor(df$disease, levels = rev(unique(df$disease)))
+levels(df$measure) <- c("OR", expression('-log'[10]*' '*italic('P')*'-value'))
 p <- ggplot(df, aes(x=disease, y=value, fill=network)) +
   geom_bar(stat="identity", position=position_dodge()) +
   scale_y_continuous(expand = expand_scale(c(0, 0.05))) +
   theme_bw() + 
   theme(axis.text.x = element_text(angle = -45, hjust = 0), 
         legend.title = element_blank(),
+        legend.position = "top",
+        plot.margin=unit(c(0,2,0,0),"cm"),
         axis.title = element_blank(),
         panel.grid.major.x = element_blank()) +
-  facet_grid(measure ~., scales = "free")
-pdf("output/disease_enrichment.pdf", 11, 5)
+  facet_grid(measure ~., scales = "free", switch = "y", labeller=label_parsed)
+pdf("output/disease_enrichment.pdf", 10.5, 5)
 p
 dev.off()

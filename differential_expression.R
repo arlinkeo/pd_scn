@@ -148,7 +148,7 @@ volcanoplots <- lapply(dimnames(summary)[[1]], function(name){
     scale_colour_manual(values = cbf) + 
     scale_x_continuous(limits = c(-xlim, xlim)) +
     scale_y_continuous(limits = ylim) +
-    labs(x = "FC", y = expression('-log'[10]*' '*italic('P')*'-value')) +
+    labs(x = expression('-log'[2]*' '*'fold-change'), y = expression('-log'[10]*' '*italic('P')*'-value')) +
     ggtitle(network_names[name]) +
     theme_classic() + 
     theme(legend.position = "none", plot.title = element_text(size = 10))
