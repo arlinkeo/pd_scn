@@ -69,22 +69,34 @@ sample.idx <- function(id){
     cols # column indices
   })
 }
-h <- sample.idx(sample.ids("habenular nuclei"))
+h <- sample.idx(sample.ids("cerebral cortex"))
 network_idx <- lapply(networks, function(x) lapply(x, function(y) y $Inside.y.n))
-abefghi <- lapply(donorNames, function(d) {
+network_idx$abefghi <- lapply(donorNames, function(d) {
   v <- lapply(networks[-c(3,4)], function(x) {
     x[[d]]$Inside.y.n
   })
   Reduce(bitwOr, v)
 })
-network_idx <- list(Network_C = network_idx$Network_C, Network_D = network_idx$Network_D, Network_ABEFGHI = abefghi)
-sapply(network_idx, function(x)sapply(x, sum))
-percentage <- sapply(network_idx, function(x){
+network_idx$whole_brain <- lapply(abefghi, function(x){
+  rep(1, length(x))
+})
+# network_idx <- 
+#   list(Network_C = network_idx$Network_C, Network_D = network_idx$Network_D, 
+#                     Network_ABEFGHI = abefghi, whole_brain = whole_brain)
+# sapply(network_idx, function(x)sapply(x, sum))
+size <- sapply(network_idx, function(x){
   sapply(donorNames, function(d){
     n <- x[[d]]
     c <- h[[d]]
     i <- bitwAnd(n, c)
+    # sum(i)
     sum(i)/sum(n)*100
   })
 })
+size <- rbind(size, total = apply(size, 2, sum))
+size
+percentage <- apply(size, c(1,2), function(x){ 
+  x[3]/x[4]*100
+})
+percentage
 apply(percentage, 2, mean)
