@@ -3,6 +3,25 @@
 setwd("C:/Users/Arlin/surfdrive/pd_imaging_scn/pd_scn")
 options(stringsAsFactors = FALSE)
 
+# Useful variables
+donorNames <- c("donor9861", "donor10021", "donor12876", "donor14380", "donor15496", "donor15697")
+names(donorNames) <- donorNames
+network_names <- c(Network_C = "Posterior cingulate network", 
+                   Network_D = "Anterior cingulate network")
+
+# Source directory with functions
+fun_dir <- paste0(getwd(), "/functions/")
+R.utils::sourceDirectory(fun_dir, modifiedOnly = FALSE)
+
+# Make output folder
+dir.create("output")
+
+# AHBA Data preprocessing
+source("pd_braak/probe2gene_AHBA.R")
+
+
+
+
 # AHBA data directory and data
 ahba_dir <-"C:/Users/Arlin/surfdrive/AHBA_Arlin"
 probeInfo <- read.csv(paste0(ahba_dir, "/probe_info_2018-11-18.csv"))
@@ -12,19 +31,7 @@ ontology <- read.csv(paste0(ahba_dir, "/Ontology.csv"))
 #   read.csv(paste0("../AHBA_Arlin/sample_info_", d, "_2018-11-18.csv"))
 # })
 
-# Source directory with functions
-fun_dir <- paste0(getwd(), "/functions/")
-R.utils::sourceDirectory(fun_dir, modifiedOnly = FALSE)
 
-# Useful variables
-donorNames <- c("donor9861", "donor10021", "donor12876", "donor14380", "donor15496", "donor15697")
-names(donorNames) <- donorNames
-
-network_names <- c(Network_C = "Posterior cingulate network", 
-                   Network_D = "Anterior cingulate network")
-
-# Make output folder
-dir.create("output")
 
 # Run scripts
 source("samples_in_networks.R")
