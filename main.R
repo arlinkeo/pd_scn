@@ -1,10 +1,10 @@
 # Main script to run all analyses
 
-setwd("C:/Users/dkeo/surfdrive/pd_imaging_scn/pd_scn")
+setwd("C:/Users/Arlin/surfdrive/pd_imaging_scn/pd_scn")
 options(stringsAsFactors = FALSE)
 
 # AHBA data directory and data
-ahba_dir <-"C:/Users/dkeo/surfdrive/AHBA_Arlin"
+ahba_dir <-"C:/Users/Arlin/surfdrive/AHBA_Arlin"
 probeInfo <- read.csv(paste0(ahba_dir, "/probe_info_2018-11-18.csv"))
 brainExpr <- readRDS(paste0(ahba_dir, "/gene_expr.RDS"))
 ontology <- read.csv(paste0(ahba_dir, "/Ontology.csv"))
