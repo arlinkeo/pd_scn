@@ -29,7 +29,7 @@ sample_info <- lapply(donorNames, function(d){
   })
   cbind(shared, nw_info)
 })
-saveRDS(sample_info, file = "output/sample_info.rds")
+# saveRDS(sample_info, file = "output/sample_info.rds")
 
 # Number of samples within network
 df <- data.frame(
@@ -39,20 +39,6 @@ df <- rbind(df, 'Total' = apply(df, 2, sum))
 df <- cbind('Donors' = gsub("donor", "Donor ", rownames(df)), df)
 write.table(df, "output/number_of_samples.txt", row.names = FALSE, quote = FALSE, sep = "\t")
 
-# # Check overlap of samples with stress network
-# scz_network <- lapply(donorNames, function(d){
-#   read.table(file = paste0("C:/Users/dkeo/surfdrive/MandySCZpaper/", d, ".txt"), header = TRUE, sep ="\t")
-# })
-# sampleOverlap <- lapply(donorNames, function(d){
-#   sapply(networks, function(n){
-#     scz <- scz_network[[d]]$Inside.Y.N
-#     scn <- n[[d]]$Inside.y.n
-#     df <- data.frame(scz, scn, both = bitwAnd(scn, scz))
-#     apply(df, 2, sum)
-#   })
-# })
-
-# Percentage cortical samples
 # Function to select all sample IDs of a brain structure
 sample.ids <- function(roi){
   id <- ontology[ontology$name == roi, "id"]
@@ -69,34 +55,26 @@ sample.idx <- function(id){
     cols # column indices
   })
 }
-h <- sample.idx(sample.ids("cerebral cortex"))
+
+# Percentage cortical samples
+cc <- sample.idx(sample.ids("cerebral cortex"))
 network_idx <- lapply(networks, function(x) lapply(x, function(y) y $Inside.y.n))
-network_idx$abefghi <- lapply(donorNames, function(d) {
+network_idx$abefghi <- lapply(donorNames, function(d) { # non PD-related networks
   v <- lapply(networks[-c(3,4)], function(x) {
     x[[d]]$Inside.y.n
   })
   Reduce(bitwOr, v)
 })
-network_idx$whole_brain <- lapply(abefghi, function(x){
+network_idx$whole_brain <- lapply(network_idx$abefghi, function(x){ # all AHBA samples (whole brain)
   rep(1, length(x))
 })
-# network_idx <- 
-#   list(Network_C = network_idx$Network_C, Network_D = network_idx$Network_D, 
-#                     Network_ABEFGHI = abefghi, whole_brain = whole_brain)
-# sapply(network_idx, function(x)sapply(x, sum))
 size <- sapply(network_idx, function(x){
   sapply(donorNames, function(d){
-    n <- x[[d]]
-    c <- h[[d]]
-    i <- bitwAnd(n, c)
+    n <- x[[d]] # samples in network
+    c <- cc[[d]] # samples in cortex
+    i <- bitwAnd(n, c) # both present in cortex and network
     # sum(i)
     sum(i)/sum(n)*100
   })
 })
-size <- rbind(size, total = apply(size, 2, sum))
 size
-percentage <- apply(size, c(1,2), function(x){ 
-  x[3]/x[4]*100
-})
-percentage
-apply(percentage, 2, mean)
