@@ -22,14 +22,16 @@ source("pd_braak/probe2gene_AHBA.R")
 # Select AHBA samples within SCNs
 source("samples_in_networks.R")
 
-
-
-
-# Run scripts
-
+# Differential expression between networks
 source("differential_expression.R")
+
+# Gene set enrichment analysis
 source("pathway_analysis.R")
+
+# Cell-type marker enrichment
 source("celltype_marker_conversion.R")
 source("celltype_enrichment_degs.R")
 source("heatmap_celltypes.R")
+
+# Enrichment of disease-associated genes
 source("disease_enrichment_degs.R")
