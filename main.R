@@ -19,22 +19,14 @@ dir.create("output")
 # AHBA Data preprocessing
 source("pd_braak/probe2gene_AHBA.R")
 
+# Select AHBA samples within SCNs
+source("samples_in_networks.R")
 
-
-
-# AHBA data directory and data
-ahba_dir <-"C:/Users/Arlin/surfdrive/AHBA_Arlin"
-probeInfo <- read.csv(paste0(ahba_dir, "/probe_info_2018-11-18.csv"))
-brainExpr <- readRDS(paste0(ahba_dir, "/gene_expr.RDS"))
-ontology <- read.csv(paste0(ahba_dir, "/Ontology.csv"))
-# sample_annot <- lapply(donorNames, function(d){ # Sample info per donor
-#   read.csv(paste0("../AHBA_Arlin/sample_info_", d, "_2018-11-18.csv"))
-# })
 
 
 
 # Run scripts
-source("samples_in_networks.R")
+
 source("differential_expression.R")
 source("pathway_analysis.R")
 source("celltype_marker_conversion.R")
