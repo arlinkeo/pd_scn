@@ -1,6 +1,7 @@
 # Functional enrichment with Reactome
 library('ReactomePA')
 
+# GSEA with Reactome PA
 pathways <- lapply(ll_degs[3:4], function(g){
   reactome <- enrichPathway(g, universe = ahba.genes(), readable = TRUE)
   p <- reactome@result
@@ -15,6 +16,15 @@ lapply(names(pathways), function(n){
   colnames(p) <- c("Pathway", "BH", "Gene count")
   write.table(p, file = paste0("output/reactomePA_", n, ".txt"), quote = FALSE, sep = "\t", row.names = FALSE)
 })
+saveRDS(pathways, file = "output/reactomePA_pathways.rds")
+# pathways <- readRDS("output/reactomePA_pathways.rds")
+
+# # Read results from pathway enrichment
+# pathways <- lapply(names(pathways), function(n){
+#   p <- read.delim(file = paste0("output/reactomePA_", n, ".txt"))
+# })
 
 # overlap between C and D
 intersect(pathways$`Network C.upregulated`$Description, pathways$`Network D.upregulated`$Description)
+
+########## EWCE ##########
