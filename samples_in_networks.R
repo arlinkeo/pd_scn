@@ -78,3 +78,13 @@ size <- sapply(network_idx, function(x){
   })
 })
 size
+
+#####
+# Create phenotypic vector for Fulcher method
+network_phenotype <- t(sapply(networks, function(l){
+  l <- lapply(l, function(d){
+    d$Inside.y.n
+  })
+  l <- unlist(l, use.names = F)
+}))
+write.csv(network_phenotype, "output/network_phenotype.csv")
