@@ -26,5 +26,3 @@ saveRDS(pathways, file = "output/reactomePA_pathways.rds")
 
 # overlap between C and D
 intersect(pathways$`Network C.upregulated`$Description, pathways$`Network D.upregulated`$Description)
-
-########## EWCE ##########
