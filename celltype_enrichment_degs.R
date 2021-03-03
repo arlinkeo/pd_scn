@@ -5,6 +5,7 @@ library(DescTools)
 library(abind)
 
 # Filter cell-types with at least 6 markers
+# markerlist <- readRDS("output/markerlist.rds")
 markerlist6 <- markerlist[sapply(markerlist, length) >= 6]
 cat(paste("Cell-types with at least 6 genes:\n", 
             tolower(gsub("_", " ", paste(names(markerlist6), collapse = ", ")))))
