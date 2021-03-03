@@ -50,7 +50,7 @@ calculate.specificity.for.level <- function(ctd_oneLevel) {
   return(ctd_oneLevel)
 }
 
-# Generate specificity matri with only informative genes (markers)
+# Generate specificity matrix with only informative genes (cell type markers)
 markers <- lapply(conversion_table, function(t) t$'10090')
 markers <- unlist(markers) # 647 markers in total
 markers <- intersect(markers, rownames(n_expressoExpr)) # 629 markers? markers from only purified bulk cell-type data
@@ -77,7 +77,6 @@ celltypedata <- lapply(names(celltypedata), function(n){
   ct
 })
 
-
 ################################################################################
 # EWCE with cell-types defined by Zeisel et al. (already processed by Skene et al.)
 
@@ -95,7 +94,7 @@ ewce <- sapply(c(1:2), function(l){
       mouse.hits <- h2m[h2m$'9606_ID' %in% rownames(g), "10090"]
       full_results = bootstrap.enrichment.test(sct_data=celltypedata,hits=mouse.hits,bg=mouse.bg,
                                                reps=1000,annotLevel=l)
-      full_results$results$p.adjusted <- p.adjust(full_results$results$p, method = "BH")
+      # full_results$results$p.adjusted <- p.adjust(full_results$results$p, method = "BH")
       full_results
     })
   })
