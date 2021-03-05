@@ -74,20 +74,38 @@ degs <- alply(summary_ttest[, "summary", , ], 1, function(x){
   up <- up[order(up[,"BH"]),]
   list(downregulated = down, upregulated = up)
 }, .dims = TRUE)
+
+# Check differential stability (DS) of degs
+# Read DS from Supplementary Table 2 from Hawrylycz et al. 2015
+ds <- read.csv("../../Papers/Hawrylycz2015/SupplementaryTable2_41593_2015_BFnn4171_MOESM93_ESM.csv")
+
+ds_degs <- lapply(degs, function(n){
+  lapply(n, function(t){
+    l <- rownames(t)
+    g <- entrezId2Name(l)
+    data.frame(t, 'Differential Stability (r)' = ds$Pearson[match(g,ds$Gene)], check.names = F)
+  })
+})
+sapply(ds_degs, function(n){
+  sapply(n, function(t){
+    mean(t[, 'Differential Stability (r)'], na.rm = T) 
+  })
+})
 # saveRDS(degs, file = "output/degs.rds")
 
 # Write tables of DEGs
-lapply(names(degs), function(network){
-  direction <- degs[[network]]
+lapply(names(ds_degs), function(network){
+  direction <- ds_degs[[network]]
   lapply(names(direction), function(d){
-    t <- degs[[network]][[d]]
+    t <- ds_degs[[network]][[d]]
     t <- t[, -c(2,6)]
     t[, c(1:3)] <- round(t[, c(1:3)], digits = 2)
     t[, c(4:5)] <- format(t[, c(4:5)], digits = 3, scientific = T)
     t <- cbind('gene'= entrezId2Name(rownames(t)), 'gene_id' = rownames(t), t)
     colnames(t) <- paste0(toupper(substr(colnames(t), 1, 1)), substring(colnames(t), 2))
     colnames(t)[c(2,3,6)] <- c("Entrez ID", "Fold-change", "P-value")
-    write.table(t, file = paste0("output/degs_", network,"_", d, ".txt"), 
+    t[is.na(t)] <- ""
+    write.table(t, file = paste0("output/degs_ds_", network,"_", d, ".txt"), 
                 sep = "\t", quote = FALSE, row.names = FALSE)
   })
 })
@@ -154,5 +172,22 @@ dev.off()
 #     lapply(network, function(t){
 #       intersect(rownames(t), pd)
 #     })
+#   })
+# })
+ 
+
+# # Correlation of degs within and outside networks
+# sapply(ll_degs, function(g){
+#   sapply(network_idx, function(n){
+#     l <- lapply(donorNames, function(d){
+#       e <- brainExpr[[d]][g, n[[d]] == 1]
+#       r <- cor(t(e))
+#       diag(r) <- NA
+#       r[lower.tri(r)] <- NA
+#       # mean(r, na.rm = T)
+#       r
+#     })
+#     l <- simplify2array(l)
+#     mean(apply(l, c(1,2), mean), na.rm = T)
 #   })
 # })
