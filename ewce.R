@@ -94,7 +94,6 @@ ewce <- sapply(c(1:2), function(l){
       mouse.hits <- h2m[h2m$'9606_ID' %in% rownames(g), "10090"]
       full_results = bootstrap.enrichment.test(sct_data=celltypedata,hits=mouse.hits,bg=mouse.bg,
                                                reps=1000,annotLevel=l)
-      # full_results$results$p.adjusted <- p.adjust(full_results$results$p, method = "BH")
       full_results
     })
   })
@@ -107,9 +106,13 @@ ewce <- sapply(c(1:2), function(l){
 
 # plot results
 lapply(c(1:2), function(l){
-  width <- if(l==1) 8 else 11
-  pdf(paste0("output/ewce_level", l, ".pdf"), width, 9)
-  print(ewce.plot(total_res=ewce[[l]],mtc_method="BH")$plain)
+  width <- if(l==1) 4 else 8
+  pdf(paste0("output/ewce_level", l, ".pdf"), width, 6)
+  e <- ewce[[l]]
+  e <- e[grep("upregulated", e$list), ]
+  e$list <- gsub(".upregulated", "", e$list)
+  e$list <- gsub("_", " ", e$list)
+  print(ewce.plot(total_res=e,mtc_method="BH")$plain)
   dev.off()
 })
 
