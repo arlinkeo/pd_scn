@@ -112,10 +112,15 @@ lapply(c(1:2), function(l){
   e <- e[grep("upregulated", e$list), ]
   e$list <- gsub(".upregulated", "", e$list)
   e$list <- gsub("_", " ", e$list)
-  print(ewce.plot(total_res=e,mtc_method="BH")$plain)
+  p <- print(ewce.plot(total_res=e,mtc_method="BH")$plain)
   dev.off()
+  p$data
 })
 
+lapply(ewce, function(t){
+  # t$bh <- p.adjust(t$p, method = "BH")
+  t[t$p<0.05, ]
+})
 
 # ##### Using Zeisel's single cell data #####
 # 
