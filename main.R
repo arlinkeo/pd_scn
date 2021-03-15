@@ -25,13 +25,18 @@ source("samples_in_networks.R")
 # Differential expression between networks
 source("differential_expression.R")
 
+# Differential stability of DEGs
+source("differential_stability.R")
+
 # Gene set enrichment analysis
 source("pathway_analysis.R")
+source("go_enrichment.R")
 
 # Cell-type marker enrichment
 source("celltype_marker_conversion.R")
 source("celltype_enrichment_degs.R")
 source("heatmap_celltypes.R")
+source("ewce.R")
 
 # Enrichment of disease-associated genes
 source("disease_enrichment_degs.R")
